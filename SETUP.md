@@ -30,29 +30,31 @@ Step 2: Create the Environment
  the above will create a virtual environment called hqnn_env
 
 Step 3: Activate the Environment
-Windows (PowerShell)	hqnn_env\Scripts\Activate.ps1
-💻 Windows (CMD)	hqnn_env\Scripts\activate
+<.\hqnn_env\Scripts\Activate.ps1>
 
 
 Once active, your terminal should display:
 
 (hqnn_env) PS E:\Computational Engineering\HQNN-for-Catalyst-Prediction>
 
-📦 3. Install Project Dependencies
+3. Install Project Dependencies
 Option A – Using the requirements file
 
-If you already have a requirements.txt in the repository:
-
-pip install -r requirements.txt
-
-Option B – Manual Installation (if needed)
-pip install pennylane==0.37 qiskit==1.1.0 torch torchvision torchaudio \
-scikit-learn pandas numpy matplotlib seaborn shap scipy mlflow jupyterlab plotly
+<pip install -r requirements.txt>
 
 
-Optional (for experiment tracking visualization):
 
-pip install wandb
+4. Set-up fairchem-core see link for more information: https://fair-chem.github.io/core/install.html
+from fairchem.data import PyChemDataset
+
+# This will download or load from cache
+dataset = PyChemDataset(root="data/pychem")
+
+print("Number of catalyst samples:", len(dataset))
+print("Sample data structure:", dataset[0])
+
+
+
 
 🔍 4. Verify Your Setup
 Check Key Package Imports

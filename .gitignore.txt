@@ -1,0 +1,18 @@
+# Python virtual environments
+hqnn_env/
+venv/
+.env/
+
+# Data & experiment folders
+data/
+mlruns/
+results/
+
+# Jupyter temp & cache
+*.ipynb_checkpoints/
+__pycache__/
+*.pyc
+
+# OS / Editor files
+.DS_Store
+Thumbs.db

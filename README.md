@@ -34,5 +34,17 @@ mlruns/ → MLflow experiment logs (Ui for viewing results)
 requirements.txt → Python environment dependencies
 setup_hqnn_env.ps1 → PowerShell environment setup script
 README.md → Project description and usage
+SETUP.md → Project set-up instructions
 
 
+## Activate Environment and install dependencies
+
+# First create the virtual environment
+python -m venv hqnn_env
+
+# Acivate the virtual environment
+
+.\hqnn_env\Scripts\activate 
+
+# Install all dependencies
+pip install -r requirements.txt
