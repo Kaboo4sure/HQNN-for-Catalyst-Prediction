@@ -44,7 +44,7 @@ python -m venv hqnn_env
 
 # Acivate the virtual environment
 
-.\hqnn_env\Scripts\activate 
+.\hqnn_env\Scripts\Activate.ps1 
 
 # Install all dependencies
 pip install -r requirements.txt
