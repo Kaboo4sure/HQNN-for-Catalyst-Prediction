@@ -1,0 +1,44 @@
+# ==========================
+# HQNN for Catalyst Prediction
+# Environment Requirements (Python 3.11)
+# ==========================
+
+# --- Core Scientific & ML ---
+numpy==1.26.4
+pandas==2.2.2
+scipy==1.13.1
+scikit-learn==1.5.2
+matplotlib==3.9.2
+seaborn==0.13.2
+plotly==5.24.1
+
+# --- Deep Learning Framework ---
+torch==2.3.1
+torchvision==0.18.1
+torchaudio==2.3.1
+
+# --- Quantum Machine Learning ---
+pennylane==0.37.0
+qiskit==1.1.0
+
+# --- Catalyst & Chemistry Libraries ---
+fairchem-core==2.0.1
+ase==3.22.1
+
+# --- Model Explainability ---
+shap==0.46.0
+
+# --- Experiment Tracking & Automation ---
+mlflow==2.14.1
+wandb==0.17.6
+
+# --- Notebook & Interactive Tools ---
+jupyterlab==4.2.5
+notebook==7.2.2
+ipykernel==6.29.5
+ipywidgets==8.1.3
+
+# --- Utility & File Handling ---
+requests==2.32.3
+tqdm==4.66.5
+pyyaml==6.0.2
