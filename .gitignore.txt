@@ -16,3 +16,7 @@ __pycache__/
 # OS / Editor files
 .DS_Store
 Thumbs.db
+
+# Because hqnn_env/ folder sits inside the Git repo, VS Code's Git integration things all the fiarchem-core files must be trackes
+#   The files are alot, so we are ignoring them.
+hqnn_env/
