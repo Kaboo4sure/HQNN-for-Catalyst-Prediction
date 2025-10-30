@@ -1,25 +1,30 @@
-from fairchem.core.datasets.lmdb_dataset import LmdbDataset
-from ase import Atoms
 import os
+import requests
+import tarfile
+from fairchem.core.datasets.lmdb_dataset import LmdbDataset
 
-# ✅ Local path to your dummy dataset
 data_dir = r"E:\Computational Engineering\samples"
-db_path = os.path.join(data_dir, "oc20_sample.db")
+os.makedirs(data_dir, exist_ok=True)
 
-# ✅ Config structure for FairChem v1.10.0
-config = {
-    "src": db_path,
-    "train": False,
-}
+# HF mirror of OC20 sample
+url = "https://huggingface.co/datasets/FAIR/Open-Catalyst-Project/resolve/main/2020-05-18-oc20_sample.tar.gz"
+tar_path = os.path.join(data_dir, "oc20_sample.tar.gz")
 
-# ✅ Initialize the LMDB-style dataset
+if not os.path.exists(os.path.join(data_dir, "oc20_sample")):
+    print("⬇️ Downloading OC20 sample dataset from Hugging Face...")
+    r = requests.get(url, stream=True)
+    r.raise_for_status()
+    with open(tar_path, "wb") as f:
+        for chunk in r.iter_content(chunk_size=8192):
+            f.write(chunk)
+    print("✅ Download complete. Extracting...")
+    with tarfile.open(tar_path, "r:gz") as tar:
+        tar.extractall(data_dir)
+    print("✅ Extraction finished.")
+else:
+    print("✅ Dataset already present.")
+
+config = {"src": os.path.join(data_dir, "oc20_sample"), "train": False}
 ds = LmdbDataset(config)
-
-print("✅ Dataset initialized successfully!")
-print(f"Number of data points: {len(ds)}")
-
-# ✅ Retrieve a sample
-sample = ds[0]
-print(f"Available keys: {list(sample.keys())}")
-print(f"Energy: {sample.get('energy', 'N/A')}")
-print(f"Forces: {sample.get('forces', 'N/A')}")
+print(f"✅ Dataset loaded successfully — {len(ds)} samples")
+print("Keys:", list(ds[0].keys()))
