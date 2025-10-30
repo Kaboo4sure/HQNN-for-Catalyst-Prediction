@@ -1,7 +1,7 @@
-# ==============================================
+# ==========================
 # HQNN for Catalyst Prediction
-# Verified Stable Environment (Python 3.11)
-# ==============================================
+# Environment Requirements (Python 3.11)
+# ==========================
 
 # --- Core Scientific & ML ---
 numpy==1.26.4
@@ -13,9 +13,11 @@ seaborn==0.13.2
 plotly==5.24.1
 
 # --- Deep Learning Framework ---
-torch==2.3.1
+torch==2.3.1+cpu
 torchvision==0.18.1
 torchaudio==2.3.1
+# NOTE: Use +cpu variant since this setup is for CPU only
+# For CUDA users, replace "+cpu" with "+cu121" (for CUDA 12.1)
 
 # --- Quantum Machine Learning ---
 pennylane==0.37.0
@@ -23,14 +25,15 @@ qiskit==1.1.0
 
 # --- Catalyst & Chemistry Libraries ---
 fairchem-core==1.10.0
-ase==3.22.1
+ase==3.26.0
 
-# --- Graph Neural Network Utilities ---
+# --- PyTorch Geometric Ecosystem (for FairChem & Catalyst Graphs) ---
 torch-scatter==2.1.2
 torch-sparse==0.6.18
 torch-cluster==1.6.3
 torch-spline-conv==1.2.2
 torch-geometric==2.5.3
+# Wheels available from https://data.pyg.org/whl/torch-2.3.1+cpu.html
 
 # --- Model Explainability ---
 shap==0.46.0
@@ -50,8 +53,7 @@ requests==2.32.3
 tqdm==4.66.5
 pyyaml==6.0.2
 
-# --- Version Compatibility ---
-autoray==0.6.12
-packaging==24.1
-protobuf==4.25.3
-pytz==2024.1
+# --- Optional ---
+# Install PyG CPU wheels manually if needed:
+# pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric \
+#   -f https://data.pyg.org/whl/torch-2.3.1+cpu.html
