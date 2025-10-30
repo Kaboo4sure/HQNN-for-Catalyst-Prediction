@@ -1,13 +1,19 @@
 from fairchem.core.datasets import AseDBDataset
-from pathlib import Path
+import os
 
-# define a small local dataset directory
-data_dir = Path("E:\Computational Engineering/samples")
-data_dir.mkdir(parents=True, exist_ok=True)
+# ✅ Local data directory (you can change this path)
+data_dir = r"E:\Computational Engineering/samples"
 
-# test load of a sample dataset (this one ships with fairchem)
-ds = AseDBDataset("OC20_sample", root=data_dir)
+# Example LMDB or ASE database file (you can later replace with real OC20 or custom data)
+db_path = os.path.join(data_dir, "oc20_sample.db")
 
-print(f"Dataset loaded at: {data_dir}")
-print(f"Number of samples: {len(ds)}")
-print(f"Sample keys: {list(ds[0].keys())}")
+# Initialize dataset properly for FairChem v1.10.0
+ds = AseDBDataset(name="OC20_sample", db_paths=[db_path])
+
+print("✅ Dataset initialized successfully!")
+print(f"Number of data points: {len(ds)}")
+
+# Show sample structure info
+sample = ds[0]
+print(f"Atoms in sample: {len(sample.atoms)}")
+print("Available keys:", sample.keys())
