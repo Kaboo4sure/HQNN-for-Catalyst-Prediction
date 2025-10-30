@@ -2,7 +2,7 @@ from fairchem.core.datasets import AseDBDataset
 from pathlib import Path
 
 # define a small local dataset directory
-data_dir = Path("D:/Catalyst_Data/samples")
+data_dir = Path("E:\Computational Engineering/samples")
 data_dir.mkdir(parents=True, exist_ok=True)
 
 # test load of a sample dataset (this one ships with fairchem)
