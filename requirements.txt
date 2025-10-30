@@ -1,6 +1,7 @@
 # ==========================
 # HQNN for Catalyst Prediction
 # Environment Requirements (Python 3.11)
+# Compatible: Torch 2.4.x + FairChem 1.10.0 + NumPy 1.26
 # ==========================
 
 # --- Core Scientific & ML ---
@@ -13,16 +14,16 @@ seaborn==0.13.2
 plotly==5.24.1
 
 # --- Deep Learning Framework ---
-torch==2.3.1
-torchvision==0.18.1
-torchaudio==2.3.1
+torch==2.4.1
+torchvision==0.19.1
+torchaudio==2.4.1
 
 # --- Quantum Machine Learning ---
 pennylane==0.37.0
 qiskit==1.1.0
 
 # --- Catalyst & Chemistry Libraries ---
-fairchem-core==1.10.0        # ✅ Compatible with NumPy 1.x and Python 3.11
+fairchem-core==1.10.0      # requires torch >=2.4
 ase==3.26.0
 
 # --- Model Explainability ---
