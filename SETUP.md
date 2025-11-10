@@ -33,6 +33,7 @@ Step 3: Activate the Environment
 <.\hqnn_env\Scripts\Activate.ps1>
 
 
+
 Once active, your terminal should display:
 
 (hqnn_env) PS E:\Computational Engineering\HQNN-for-Catalyst-Prediction>

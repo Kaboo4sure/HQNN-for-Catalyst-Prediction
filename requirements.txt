@@ -27,6 +27,7 @@ qiskit==1.1.0
 fairchem-core==1.10.0
 ase==3.26.0
 
+# -- fairchem because the internal module is structures with fairchem/Core/datavbase/common/common
 # --- PyTorch Geometric Ecosystem (for FairChem & Catalyst Graphs) ---
 torch-scatter==2.1.2
 torch-sparse==0.6.18
@@ -52,6 +53,9 @@ ipywidgets==8.1.3
 requests==2.32.3
 tqdm==4.66.5
 pyyaml==6.0.2
+
+# Intsall ipykernel to be able to run the notebook
+ipykernel
 
 # --- Optional ---
 # Install PyG CPU wheels manually if needed:
