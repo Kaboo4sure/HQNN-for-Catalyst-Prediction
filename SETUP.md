@@ -32,6 +32,8 @@ Step 2: Create the Environment
 Step 3: Activate the Environment
 <.\hqnn_env\Scripts\Activate.ps1>
 
+Step3: install kernel in the path you are running the code from to be able to use ipynb
+<Installed kernelspec hqnn_env in C:\Users\sanya\AppData\Roaming\jupyter\kernels\hqnn_env>
 
 
 Once active, your terminal should display:
