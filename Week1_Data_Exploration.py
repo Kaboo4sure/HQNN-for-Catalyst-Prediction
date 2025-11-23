@@ -4,6 +4,7 @@ import urllib.request
 import torch
 import pandas as pd
 import json
+from fairchem.core.datasets.lmdb_dataset import LmdbDataset
 
 # === Base storage directory ===
 data_dir = r"E:\Computational Engineering\samples"
@@ -14,9 +15,7 @@ url = "http://dl.fbaipublicfiles.com/opencatalystproject/data/tutorial_data.tar.
 tar_path = os.path.join(data_dir, "tutorial_data.tar.gz")
 extract_dir = os.path.join(data_dir, "tutorial_data_extracted")
 csv_dir = os.path.join(data_dir, "tutorial_csv")
-
 os.makedirs(csv_dir, exist_ok=True)
-
 
 # =================================================================
 # Step 1 — Download New File (Supports Resume)
@@ -25,10 +24,10 @@ def download_file(url, dest, chunk_size=16 * 1024 * 1024):
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     mode = "ab" if os.path.exists(dest) else "wb"
     downloaded = os.path.getsize(dest) if os.path.exists(dest) else 0
-    print(f"⬇️ Starting download (resume from {downloaded / (1024*1024):.2f} MB)...")
+    print(f"⬇️ Starting download (resume from {downloaded/(1024*1024):.2f} MB)...")
 
     with urllib.request.urlopen(req) as response, open(dest, mode) as out_file:
-        total_size = response.length or 2 * 1024 * 1024 * 1024  # 2GB estimate
+        total_size = response.length or 2 * 1024 * 1024 * 1024  # Unknown size fallback
         while True:
             chunk = response.read(chunk_size)
             if not chunk:
@@ -36,12 +35,12 @@ def download_file(url, dest, chunk_size=16 * 1024 * 1024):
             out_file.write(chunk)
             downloaded += len(chunk)
             pct = (downloaded / total_size) * 100
-            print(f"📦 {downloaded / (1024*1024):.2f} MB ({pct:.2f}%)", end="\r")
+            print(f"📦 {downloaded/(1024*1024):.2f} MB ({pct:.2f}%)", end="\r")
 
     print("\n✅ Download complete.")
 
 
-# === Only download if missing or too small ===
+# === Download only if missing or small ===
 if not os.path.exists(tar_path) or os.path.getsize(tar_path) < 1024 * 1024:
     download_file(url, tar_path)
 else:
@@ -62,64 +61,58 @@ if not os.path.exists(extract_dir):
 else:
     print("✅ tutorial_data already extracted!")
 
-
 # =================================================================
-# Step 3 — Search for .pt or .json files
+# Step 3 — Search manually for LMDB files
 # =================================================================
-pt_files = []
-json_files = []
+lmdb_paths = []
 
 for root, dirs, files in os.walk(extract_dir):
-    for f in files:
-        if f.endswith(".pt"):
-            pt_files.append(os.path.join(root, f))
-        if f.endswith(".json"):
-            json_files.append(os.path.join(root, f))
+    if "data.lmdb" in files:
+        lmdb_paths.append(root)
 
-print("🔍 Found PT files:", len(pt_files))
-print("🔍 Found JSON files:", len(json_files))
-
+print("\n🔍 LMDB datasets found:")
+for p in lmdb_paths:
+    print("  •", p)
 
 # =================================================================
-# Step 4A — Convert .pt files → CSV
+# Step 4 — Convert LMDB → CSV and Merge
 # =================================================================
-def convert_pt_to_csv(pt_file, out_csv):
-    print(f"📄 Converting {pt_file} → CSV...")
-    data = torch.load(pt_file)
+all_rows = []
 
-    flat = {}
-    for k, v in data.items():
-        try:
-            flat[k] = v.numpy().flatten()
-        except Exception:
-            flat[k] = [v]
+def read_lmdb(lmdb_path, label_name, max_samples=300):
+    print(f"\n📖 Reading LMDB: {lmdb_path}")
+    ds = LmdbDataset({"src": lmdb_path, "train": False})
+    total = len(ds)
+    print(f"📦 Total samples: {total}")
 
-    df = pd.DataFrame(flat)
-    df.to_csv(out_csv, index=False)
-    print("✅ Saved:", out_csv)
+    rows = []
 
+    for i in range(min(total, max_samples)):
+        sample = ds[i]
+        row = {"split": label_name, "index": i}
 
-for pt in pt_files:
-    out_csv = os.path.join(csv_dir, os.path.basename(pt).replace(".pt", ".csv"))
-    convert_pt_to_csv(pt, out_csv)
+        for k, v in sample.items():
+            try:
+                row[k] = v.tolist() if hasattr(v, "tolist") else v
+            except:
+                row[k] = str(v)
 
+        rows.append(row)
 
-# =================================================================
-# Step 4B — Convert .json files → CSV
-# =================================================================
-def convert_json_to_csv(json_file, out_csv):
-    print(f"📄 Converting {json_file} → CSV...")
-    with open(json_file, "r") as f:
-        data = json.load(f)
-
-    df = pd.json_normalize(data)
-    df.to_csv(out_csv, index=False)
-    print("✅ Saved:", out_csv)
+    return rows
 
 
-for js in json_files:
-    out_csv = os.path.join(csv_dir, os.path.basename(js).replace(".json", ".csv"))
-    convert_json_to_csv(js, out_csv)
+# Read each LMDB and merge
+for path in lmdb_paths:
+    label = path.replace(extract_dir + "\\", "").replace("\\", "_")
+    rows = read_lmdb(path, label)
+    all_rows.extend(rows)
 
 
-print("\n🎉 ALL DONE — CSV files saved into:", csv_dir)
+# Convert to BIG CSV
+merged_csv = os.path.join(csv_dir, "tutorial_data_merged.csv")
+df = pd.DataFrame(all_rows)
+df.to_csv(merged_csv, index=False)
+
+print("\n🎉 MERGED CSV CREATED:", merged_csv)
+print(f"📊 Total rows: {len(df)}")
