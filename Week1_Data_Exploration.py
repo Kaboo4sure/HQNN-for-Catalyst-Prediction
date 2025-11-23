@@ -7,7 +7,8 @@ from fairchem.core.datasets.lmdb_dataset import LmdbDataset
 data_dir = r"E:\Computational Engineering\samples"
 os.makedirs(data_dir, exist_ok=True)
 
-url = "https://dl.fbaipublicfiles.com/opencatalystproject/data/is2res_train_val_test_lmdbs.tar.gz"
+#url = "https://dl.fbaipublicfiles.com/opencatalystproject/data/is2res_train_val_test_lmdbs.tar.gz"
+url = "http://dl.fbaipublicfiles.com/opencatalystproject/data/tutorial_data.tar.gz"
 tar_path = os.path.join(data_dir, "is2res_train_val_test_lmdbs.tar.gz")
 
 # === Step 1: Streamed + resumable download ===
