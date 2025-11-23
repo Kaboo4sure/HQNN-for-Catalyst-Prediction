@@ -1,25 +1,34 @@
 import os
 import tarfile
 import urllib.request
-from fairchem.core.datasets.lmdb_dataset import LmdbDataset
+import torch
+import pandas as pd
+import json
 
-# === Local storage path ===
+# === Base storage directory ===
 data_dir = r"E:\Computational Engineering\samples"
 os.makedirs(data_dir, exist_ok=True)
 
-#url = "https://dl.fbaipublicfiles.com/opencatalystproject/data/is2res_train_val_test_lmdbs.tar.gz"
+# === New dataset (tutorial_data) ===
 url = "http://dl.fbaipublicfiles.com/opencatalystproject/data/tutorial_data.tar.gz"
-tar_path = os.path.join(data_dir, "is2res_train_val_test_lmdbs.tar.gz")
+tar_path = os.path.join(data_dir, "tutorial_data.tar.gz")
+extract_dir = os.path.join(data_dir, "tutorial_data_extracted")
+csv_dir = os.path.join(data_dir, "tutorial_csv")
 
-# === Step 1: Streamed + resumable download ===
+os.makedirs(csv_dir, exist_ok=True)
+
+
+# =================================================================
+# Step 1 — Download New File (Supports Resume)
+# =================================================================
 def download_file(url, dest, chunk_size=16 * 1024 * 1024):
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     mode = "ab" if os.path.exists(dest) else "wb"
     downloaded = os.path.getsize(dest) if os.path.exists(dest) else 0
-    print(f"⬇️ Starting download (resume from {downloaded / (1024 * 1024):.2f} MB)...")
+    print(f"⬇️ Starting download (resume from {downloaded / (1024*1024):.2f} MB)...")
 
     with urllib.request.urlopen(req) as response, open(dest, mode) as out_file:
-        total_size = response.length or 25 * 1024 * 1024 * 1024  # Approx 25 GB if unknown
+        total_size = response.length or 2 * 1024 * 1024 * 1024  # 2GB estimate
         while True:
             chunk = response.read(chunk_size)
             if not chunk:
@@ -27,45 +36,90 @@ def download_file(url, dest, chunk_size=16 * 1024 * 1024):
             out_file.write(chunk)
             downloaded += len(chunk)
             pct = (downloaded / total_size) * 100
-            print(f"📦 {downloaded / (1024 * 1024):.2f} MB ({pct:.2f}%)", end="\r")
+            print(f"📦 {downloaded / (1024*1024):.2f} MB ({pct:.2f}%)", end="\r")
+
     print("\n✅ Download complete.")
 
+
+# === Only download if missing or too small ===
 if not os.path.exists(tar_path) or os.path.getsize(tar_path) < 1024 * 1024:
     download_file(url, tar_path)
 else:
-    print(f"✅ File already exists ({os.path.getsize(tar_path) / (1024 * 1024):.2f} MB).")
+    print(f"✅ tutorial_data.tar.gz already exists ({os.path.getsize(tar_path)/(1024*1024):.2f} MB).")
 
-# === Step 2: Verify before extraction ===
-if os.path.getsize(tar_path) < 1024 * 1024:
-    raise ValueError("❌ Download incomplete — file too small!")
 
-extracted_dir = os.path.join(data_dir, "is2res_lmdbs")
-
-if not os.path.exists(extracted_dir):
-    print("📦 Extracting dataset...")
+# =================================================================
+# Step 2 — Extract to NEW folder
+# =================================================================
+if not os.path.exists(extract_dir):
+    print("📦 Extracting new tutorial_data...")
     try:
         with tarfile.open(tar_path, "r:gz") as tar:
-            tar.extractall(extracted_dir)
-        print("✅ Extraction complete.")
+            tar.extractall(extract_dir)
+        print("✅ Extraction complete:", extract_dir)
     except tarfile.ReadError:
-        raise ValueError("❌ Extraction failed — file may be incomplete or corrupted.")
+        raise ValueError("❌ Extraction failed — file may be corrupted.")
 else:
-    print("✅ Dataset already extracted.")
+    print("✅ tutorial_data already extracted!")
 
-# === Step 3: Locate LMDB directories ===
-train_dir = None
-for root, dirs, files in os.walk(extracted_dir):
-    if any(f.endswith(".lmdb") for f in files):
-        train_dir = root
-        break
 
-if not train_dir:
-    raise FileNotFoundError("❌ No LMDB files found after extraction.")
-print(f"✅ Found LMDB path: {train_dir}")
+# =================================================================
+# Step 3 — Search for .pt or .json files
+# =================================================================
+pt_files = []
+json_files = []
 
-# === Step 4: Load dataset ===
-config = {"src": train_dir, "train": True}
-ds = LmdbDataset(config)
+for root, dirs, files in os.walk(extract_dir):
+    for f in files:
+        if f.endswith(".pt"):
+            pt_files.append(os.path.join(root, f))
+        if f.endswith(".json"):
+            json_files.append(os.path.join(root, f))
 
-print(f"✅ Dataset loaded successfully — {len(ds)} samples found")
-print("🧪 Example keys:", list(ds[0].keys()))
+print("🔍 Found PT files:", len(pt_files))
+print("🔍 Found JSON files:", len(json_files))
+
+
+# =================================================================
+# Step 4A — Convert .pt files → CSV
+# =================================================================
+def convert_pt_to_csv(pt_file, out_csv):
+    print(f"📄 Converting {pt_file} → CSV...")
+    data = torch.load(pt_file)
+
+    flat = {}
+    for k, v in data.items():
+        try:
+            flat[k] = v.numpy().flatten()
+        except Exception:
+            flat[k] = [v]
+
+    df = pd.DataFrame(flat)
+    df.to_csv(out_csv, index=False)
+    print("✅ Saved:", out_csv)
+
+
+for pt in pt_files:
+    out_csv = os.path.join(csv_dir, os.path.basename(pt).replace(".pt", ".csv"))
+    convert_pt_to_csv(pt, out_csv)
+
+
+# =================================================================
+# Step 4B — Convert .json files → CSV
+# =================================================================
+def convert_json_to_csv(json_file, out_csv):
+    print(f"📄 Converting {json_file} → CSV...")
+    with open(json_file, "r") as f:
+        data = json.load(f)
+
+    df = pd.json_normalize(data)
+    df.to_csv(out_csv, index=False)
+    print("✅ Saved:", out_csv)
+
+
+for js in json_files:
+    out_csv = os.path.join(csv_dir, os.path.basename(js).replace(".json", ".csv"))
+    convert_json_to_csv(js, out_csv)
+
+
+print("\n🎉 ALL DONE — CSV files saved into:", csv_dir)
