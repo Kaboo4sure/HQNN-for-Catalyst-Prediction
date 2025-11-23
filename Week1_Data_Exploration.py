@@ -1,9 +1,7 @@
 import os
 import tarfile
 import urllib.request
-import torch
 import pandas as pd
-import json
 from fairchem.core.datasets.lmdb_dataset import LmdbDataset
 
 # === Base storage directory ===
@@ -61,6 +59,7 @@ if not os.path.exists(extract_dir):
 else:
     print("✅ tutorial_data already extracted!")
 
+
 # =================================================================
 # Step 3 — Search manually for LMDB files
 # =================================================================
@@ -74,22 +73,22 @@ print("\n🔍 LMDB datasets found:")
 for p in lmdb_paths:
     print("  •", p)
 
-# =================================================================
-# Step 4 — Convert LMDB → CSV and Merge
-# =================================================================
-all_rows = []
 
-def read_lmdb(lmdb_path, label_name, max_samples=300):
+# =================================================================
+# Step 4 — Convert each LMDB to its own CSV (NO MERGING)
+# =================================================================
+def convert_lmdb_to_csv(lmdb_path, output_name, max_samples=500):
     print(f"\n📖 Reading LMDB: {lmdb_path}")
     ds = LmdbDataset({"src": lmdb_path, "train": False})
     total = len(ds)
     print(f"📦 Total samples: {total}")
 
     rows = []
+    sample_limit = min(total, max_samples)
 
-    for i in range(min(total, max_samples)):
+    for i in range(sample_limit):
         sample = ds[i]
-        row = {"split": label_name, "index": i}
+        row = {"index": i}
 
         for k, v in sample.items():
             try:
@@ -99,20 +98,14 @@ def read_lmdb(lmdb_path, label_name, max_samples=300):
 
         rows.append(row)
 
-    return rows
+    df = pd.DataFrame(rows)
+    csv_path = os.path.join(csv_dir, f"{output_name}.csv")
+    df.to_csv(csv_path, index=False)
+
+    print(f"✅ Saved CSV: {csv_path} ({len(df)} rows)")
 
 
-# Read each LMDB and merge
-for path in lmdb_paths:
-    label = path.replace(extract_dir + "\\", "").replace("\\", "_")
-    rows = read_lmdb(path, label)
-    all_rows.extend(rows)
-
-
-# Convert to BIG CSV
-merged_csv = os.path.join(csv_dir, "tutorial_data_merged.csv")
-df = pd.DataFrame(all_rows)
-df.to_csv(merged_csv, index=False)
-
-print("\n🎉 MERGED CSV CREATED:", merged_csv)
-print(f"📊 Total rows: {len(df)}")
+# Convert each LMDB separately in original structure
+for p in lmdb_paths:
+    name = p.replace(extract_dir + "\\", "").replace("\\", "_")
+    convert_lmdb_to_csv(p, name)
