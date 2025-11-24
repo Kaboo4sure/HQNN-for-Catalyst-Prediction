@@ -33,7 +33,7 @@ print("• Change natoms (simulate labeling mistakes)")
 print("• Edit atomic_number_mean / std (simulate wrong compositions)")
 print("• Modify volume or forces (simulate experimental drift)")
 print("\nAfter editing, save your file as:")
-print("👉 oc20_first100_inconsistent_manual.csv")
+print("oc20_first100_inconsistent_manual.csv")
 
 # ---------------------------------------------------------------
 # 3️⃣ Visualization of the clean dataset (optional)
