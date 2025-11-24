@@ -1,76 +1,55 @@
 """
-📘 Week 2B — Data Consistency Simulation
+📘 Week 2B — Manual Data Consistency Simulation (100 Samples Only)
 Author: Taofeek Sanyaolu
-Purpose: Generate consistent and inconsistent datasets from preprocessed OC20 data
+Purpose: Generate a clean 100-sample dataset for manual editing.
 """
 
 import os
-import numpy as np
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 # ---------------------------------------------------------------
-# 1️⃣ Load Clean Processed Dataset
+# 1️⃣ Load Clean Processed Dataset (FIRST 100 ONLY)
 # ---------------------------------------------------------------
 data_dir = r"data/processed"
 base_path = os.path.join(data_dir, "oc20_train.csv")
 
 df = pd.read_csv(base_path)
-print(f"✅ Loaded {len(df)} clean samples from {base_path}")
 
-features = ["natoms", "energy_init", "energy_relaxed", "energy_diff",
-            "force_mean", "force_std", "volume", "atomic_number_mean", "atomic_number_std"]
-
-# ---------------------------------------------------------------
-# 2️⃣ Create Consistent and Inconsistent Copies
-# ---------------------------------------------------------------
-consistent_df = df.copy()
-
-inconsistent_df = df.copy()
-
-# --- Add controlled inconsistencies ---
-# (a) Random noise to simulate sensor/measurement drift
-for col in features:
-    noise = np.random.normal(0, 0.05, size=len(inconsistent_df))  # 5% Gaussian noise
-    inconsistent_df[col] = inconsistent_df[col] * (1 + noise)
-
-# (b) Corrupt a small subset of energy readings
-for col in ["energy_init", "energy_relaxed"]:
-    corruption_idx = np.random.choice(len(inconsistent_df), size=int(0.02 * len(inconsistent_df)), replace=False)
-    inconsistent_df.loc[corruption_idx, col] = inconsistent_df.loc[corruption_idx, col] * np.random.uniform(1.5, 2.0)
-
-# (c) Shuffle atomic number mean to simulate label mix-ups
-swap_idx = np.random.choice(len(inconsistent_df), size=int(0.01 * len(inconsistent_df)), replace=False)
-inconsistent_df.loc[swap_idx, "atomic_number_mean"] = inconsistent_df["atomic_number_mean"].sample(frac=1.0).values
-
-# Label sources
-consistent_df["source"] = "consistent"
-inconsistent_df["source"] = "inconsistent"
-
-# Combine datasets
-merged_df = pd.concat([consistent_df, inconsistent_df], ignore_index=True)
-print(f"✅ Created merged dataset: {len(merged_df)} rows total "
-      f"({len(consistent_df)} consistent + {len(inconsistent_df)} inconsistent)")
+# Keep only the first 100 rows
+df_100 = df.head(100)
+print(f"✅ Loaded {len(df_100)} samples (first 100 rows only)")
 
 # ---------------------------------------------------------------
-# 3️⃣ Save Datasets
+# 2️⃣ Save the Clean Editable Version
 # ---------------------------------------------------------------
-os.makedirs(data_dir, exist_ok=True)
-consistent_df.to_csv(os.path.join(data_dir, "oc20_consistent.csv"), index=False)
-inconsistent_df.to_csv(os.path.join(data_dir, "oc20_inconsistent.csv"), index=False)
-merged_df.to_csv(os.path.join(data_dir, "oc20_merged_sources.csv"), index=False)
-print("💾 Saved consistent, inconsistent, and merged datasets in data/processed")
+clean_path = os.path.join(data_dir, "oc20_first100_clean.csv")
+df_100.to_csv(clean_path, index=False)
+
+print(f"💾 Saved clean editable dataset → {clean_path}")
+print("📝 You should now manually create inconsistent versions of this file.")
+print("\nSuggested manual edits include:")
+print("• Change energy values (simulate measurement error)")
+print("• Change natoms (simulate labeling mistakes)")
+print("• Edit atomic_number_mean / std (simulate wrong compositions)")
+print("• Modify volume or forces (simulate experimental drift)")
+print("\nAfter editing, save your file as:")
+print("👉 oc20_first100_inconsistent_manual.csv")
 
 # ---------------------------------------------------------------
-# 4️⃣ Visualize for Quick Comparison
+# 3️⃣ Visualization of the clean dataset (optional)
 # ---------------------------------------------------------------
-plt.figure(figsize=(8, 5))
-sns.kdeplot(data=merged_df, x="energy_diff", hue="source", fill=True, common_norm=False, alpha=0.5)
-plt.title("Energy Difference Distribution — Consistent vs Inconsistent Sources")
-plt.xlabel("Energy Difference (eV)")
-plt.ylabel("Density")
-plt.tight_layout()
-plt.show()
+try:
+    import matplotlib.pyplot as plt
+    import seaborn as sns
 
-print("✅ Simulation complete — ready for Week 3 training.")
+    plt.figure(figsize=(8,5))
+    sns.kdeplot(df_100["energy_diff"], fill=True, color="blue")
+    plt.title("Energy Difference Distribution — First 100 Clean Samples")
+    plt.xlabel("Energy Diff (eV)")
+    plt.tight_layout()
+    plt.show()
+
+except ImportError:
+    print("Visualization skipped (matplotlib/seaborn not installed).")
+
+print("\n🎉 Week 2B is complete — manually edit your dataset before Week 3.")
