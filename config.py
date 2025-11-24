@@ -1,4 +1,4 @@
-DATA_DIR = r"C:\MachineMachine\HQNN\HQNN-for-Catalyst-Prediction\data"
+DATA_DIR = r"C:\MachineLearning\HQNN\HQNN-for-Catalyst-Prediction\notebooks\data"
 DRM_DIR = DATA_DIR + r"\drm"
 PROCESSED_DIR = DATA_DIR + r"\processed"
 
