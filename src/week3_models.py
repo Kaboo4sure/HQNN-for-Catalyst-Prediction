@@ -17,41 +17,38 @@ from config import PROCESSED_DIR, TARGET, CATALYST_CATEGORICAL
 def preprocess(df):
     df = df.copy()
 
-    # Remove ID and irrelevant output columns
+    # Remove non-features
     drop_cols = ["sample_id", "co2_conversion", "h2_co_ratio", "catalyst_stability"]
-    df = df.drop(columns=[col for col in drop_cols if col in df.columns], errors='ignore')
+    df = df.drop(columns=[c for c in drop_cols if c in df.columns])
 
-    # Target variable
+    # Extract y
     y = df["ch4_conversion"].astype(float).values
+
+    # Extract X
     X = df.drop(columns=["ch4_conversion"])
 
-    # Encode categorical columns
-    categorical_cols = [
-        "active_metal",
-        "promoter",
-        "support_material",
-        "synthesis_method",
-    ]
+    # Encode categoricals
+    categorical_cols = ["active_metal", "promoter", "support_material", "synthesis_method"]
     for col in categorical_cols:
         if col in X.columns:
             X[col] = pd.Categorical(X[col]).codes
 
-    # Impute missing numerical values
+    # Impute missing in X
     if X.isnull().sum().sum() > 0:
-        imputer = SimpleImputer(strategy="mean")
-        X = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
+        imp = SimpleImputer(strategy="mean")
+        X = pd.DataFrame(imp.fit_transform(X), columns=X.columns)
 
-    # ---- FIX: Drop rows where target y is NaN ----
+    # FIX: remove rows where y is NaN
     mask = ~np.isnan(y)
-    X = X[mask]
+    X = X.iloc[mask]
     y = y[mask]
-    # ---------------------------------------------
 
-    # Scale features
+    # Scale
     scaler = StandardScaler()
-    X = scaler.fit_transform(X)
+    X_scaled = scaler.fit_transform(X)
 
-    return X, y, scaler
+    return X_scaled, y, scaler
+
 
 def evaluate(df):
     X, y, _ = preprocess(df)

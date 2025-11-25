@@ -169,7 +169,14 @@ class HybridQuantumModel:
             imputer = SimpleImputer(strategy="mean")
             X = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
 
-        y = df[target_col].values.astype(np.float32)
+        # --- FIX: Impute target column if NaN ---
+        if df[target_col].isnull().sum() > 0:
+            print("   ⚠ Warning: Missing target values detected — imputing with mean.")
+            target_imputer = SimpleImputer(strategy="mean")
+            y = target_imputer.fit_transform(df[[target_col]]).flatten().astype(np.float32)
+        else:
+            y = df[target_col].values.astype(np.float32)
+
 
         # Train-test split
         X_train, X_test, y_train, y_test = train_test_split(
