@@ -8,6 +8,8 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.impute import SimpleImputer
+
 
 from config import PROCESSED_DIR, TARGET, CATALYST_CATEGORICAL
 
