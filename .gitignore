@@ -1,0 +1,36 @@
+# ===== PYTHON ENVIRONMENTS =====
+venv/
+env/
+hqnn_env/
+.venv/
+
+# ===== PYTHON COMPILED FILES =====
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ===== JUPYTER NOTEBOOK CHECKPOINTS =====
+.ipynb_checkpoints/
+
+# ===== MODEL / DATA OUTPUT =====
+*.pkl
+*.pt
+*.pth
+*.h5
+*.ckpt
+*.sav
+
+# ===== LARGE DATASETS =====
+notebooks/data/models/
+notebooks/data/oc20/
+*.npy
+*.npz
+
+# ===== LOGS =====
+logs/
+*.log
+
+# ===== SYSTEM FILES =====
+.DS_Store
+Thumbs.db
