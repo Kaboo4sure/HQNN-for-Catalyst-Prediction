@@ -267,8 +267,8 @@ def run_hybrid_qnn_experiments(datasets):
         # Fresh model per dataset
         model = HybridQuantumModel(n_qubits=4, n_layers=2)
 
-        # Train model
-        losses = model.train_model(X_train, y_train, epochs=200, lr=0.01)
+        # Train model, I resuded epochs from 200 to 40
+        losses = model.train_model(X_train, y_train, epochs=40, lr=0.01)
 
         # Evaluate
         mae, r2, predictions = model.evaluate(X_test, y_test)
