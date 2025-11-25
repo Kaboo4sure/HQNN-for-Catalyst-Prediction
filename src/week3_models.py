@@ -16,14 +16,12 @@ from config import PROCESSED_DIR, TARGET, CATALYST_CATEGORICAL
 def preprocess(df):
     df = df.copy()
 
-    # Remove ID and non-regression target columns
+    # Remove ID and irrelevant output columns
     drop_cols = ["sample_id", "co2_conversion", "h2_co_ratio", "catalyst_stability"]
-    for col in drop_cols:
-        if col in df.columns:
-            df = df.drop(columns=[col])
+    df = df.drop(columns=[col for col in drop_cols if col in df.columns], errors='ignore')
 
-    # Identify target
-    y = df["ch4_conversion"].values
+    # Target variable
+    y = df["ch4_conversion"].astype(float).values
     X = df.drop(columns=["ch4_conversion"])
 
     # Encode categorical columns
@@ -37,16 +35,22 @@ def preprocess(df):
         if col in X.columns:
             X[col] = pd.Categorical(X[col]).codes
 
-    # Handle missing
+    # Impute missing numerical values
     if X.isnull().sum().sum() > 0:
         imputer = SimpleImputer(strategy="mean")
         X = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
 
-    # Scale numerical
-    pre = StandardScaler()
-    X = pre.fit_transform(X)
+    # ---- FIX: Drop rows where target y is NaN ----
+    mask = ~np.isnan(y)
+    X = X[mask]
+    y = y[mask]
+    # ---------------------------------------------
 
-    return X, y, pre
+    # Scale features
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
+
+    return X, y, scaler
 
 def evaluate(df):
     X, y, _ = preprocess(df)
