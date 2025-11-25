@@ -12,16 +12,36 @@ from sklearn.ensemble import RandomForestRegressor
 from config import PROCESSED_DIR, TARGET, CATALYST_CATEGORICAL
 
 def preprocess(df):
-    categorical = CATALYST_CATEGORICAL
-    numerical = [c for c in df.columns if c not in categorical + [TARGET]]
+    df = df.copy()
 
-    pre = ColumnTransformer([
-        ("num", StandardScaler(), numerical),
-        ("cat", OneHotEncoder(handle_unknown="ignore"), categorical),
-    ])
+    # Remove ID and non-regression target columns
+    drop_cols = ["sample_id", "co2_conversion", "h2_co_ratio", "catalyst_stability"]
+    for col in drop_cols:
+        if col in df.columns:
+            df = df.drop(columns=[col])
 
-    X = df.drop(columns=[TARGET])
-    y = df[TARGET]
+    # Identify target
+    y = df["ch4_conversion"].values
+    X = df.drop(columns=["ch4_conversion"])
+
+    # Encode categorical columns
+    categorical_cols = [
+        "active_metal",
+        "promoter",
+        "support_material",
+        "synthesis_method",
+    ]
+    for col in categorical_cols:
+        if col in X.columns:
+            X[col] = pd.Categorical(X[col]).codes
+
+    # Handle missing
+    if X.isnull().sum().sum() > 0:
+        imputer = SimpleImputer(strategy="mean")
+        X = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
+
+    # Scale numerical
+    pre = StandardScaler()
     X = pre.fit_transform(X)
 
     return X, y, pre
