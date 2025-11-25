@@ -1,7 +1,7 @@
 pennylane
 torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu
 pandas
-numpy
+numpy==1.26.4
 scikit-learn
 matplotlib
 seaborn
