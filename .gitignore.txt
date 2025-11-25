@@ -1,7 +1,13 @@
 # Python virtual environments
-hqnn_env/
 venv/
 .env/
+
+hqnn_env/
+*.pth
+*.lmdb
+*.tar.gz
+*.whl
+__pycache__/
 
 # Data & experiment folders
 data/
