@@ -197,6 +197,10 @@ class HybridQuantumModel:
         quantum_outputs = []
         for i in range(x.shape[0]):
             q_out = self.quantum_circuit(x_quantum[i], self.weights)
+            
+            # Convert qnoce output (list or numpy array) into tensor
+            q_out = torch.tensor(q_out, dtype=torch.float32)
+            
             quantum_outputs.append(q_out)
 
         quantum_tensor = torch.stack(quantum_outputs)
