@@ -25,17 +25,6 @@ The implementation integrates **PennyLane**, **Qiskit**, **PyTorch**, and **MLfl
 
 ---
 
-## 🗂️ Repository Structure
-data/ → Raw and processed catalyst datasets
-notebooks/ → Weekly Jupyter notebooks (Week 1–6)
-scripts/ → Core HQNN, ANN, and drift monitoring code
-results/ → Visuals, metrics, and reports
-mlruns/ → MLflow experiment logs (Ui for viewing results)
-requirements.txt → Python environment dependencies
-setup_hqnn_env.ps1 → PowerShell environment setup script
-README.md → Project description and usage
-SETUP.md → Project set-up instructions
-
 
 ## Activate Environment and install dependencies
 
