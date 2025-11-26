@@ -162,13 +162,13 @@ def run_shap(models, splits):
         feature_names = splits[name]["feature_names"]
 
         # Background sample for SHAP (kernel explainer)
-        background = X_train[:100]
+        background = X_train[:10]
 
         # ---- FIX: Safe universal SHAP Explainer (no TreeExplainer) ----
     explainer = shap.Explainer(model.predict, background)
 
     # Compute SHAP values
-    shap_values = explainer(X_test[:100])      # SHAP Explanation object
+    shap_values = explainer(X_test[:10])      # SHAP Explanation object
     values = shap_values.values                # numpy array
 
     # Global importance = mean absolute SHAP per feature
