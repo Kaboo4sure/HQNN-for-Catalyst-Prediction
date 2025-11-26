@@ -84,8 +84,9 @@ def load_drm_datasets():
 # -------------------------------------------------------------------
 # 2. Hybrid Quantum-Classical Model (maps Colab Step 4)
 # -------------------------------------------------------------------
-class HybridQuantumModel:
+class HybridQuantumModel(nn.Module):
     def __init__(self, n_qubits=4, n_layers=2):
+        super().__init__()
         self.n_qubits = n_qubits
         self.n_layers = n_layers
         self.scaler = StandardScaler()

@@ -9,7 +9,8 @@ Run alone:
 Run in full pipeline:
     python main.py
 """
-
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import os
 import numpy as np
 import pandas as pd
@@ -140,7 +141,7 @@ def train_xgboost(datasets):
 
 
 # ---------------------------------------------------------
-# 4. SHAP explainability
+# 4. SHAP explainability (SAFE UNIVERSAL EXPLAINER)
 # ---------------------------------------------------------
 def run_shap(models, splits):
     print("\nWEEK 5 — SHAP EXPLAINABILITY")
@@ -155,24 +156,34 @@ def run_shap(models, splits):
         X_test = splits[name]["X_test"]
         feature_names = splits[name]["feature_names"]
 
-        background = X_train[:200]  # SHAP background
-        explainer = shap.TreeExplainer(model, data=background)
-        shap_values = explainer.shap_values(X_test)
+        # Background sample for SHAP (kernel explainer)
+        background = X_train[:100]
 
-        mean_abs = np.abs(shap_values).mean(axis=0)
+        # ---- FIX: Safe universal SHAP Explainer (no TreeExplainer) ----
+        explainer = shap.Explainer(model.predict, background)
+
+        # Compute SHAP values
+        shap_values = explainer(X_test[:100])
+
+        # SHAP provides values inside shap_values.values
+        values = shap_values.values
+
+        # Global importance = mean absolute SHAP per feature
+        mean_abs = np.abs(values).mean(axis=0)
+
         shap_results[name] = {
-            "shap_values": shap_values,
+            "shap_values": values,
             "mean_abs": mean_abs,
             "features": feature_names,
         }
 
-        # Print top-5 features
+        # Print top 5 features
         idx = np.argsort(-mean_abs)
         print("   Top 5 features:")
         for i in range(5):
             print(f"     {i+1}. {feature_names[idx[i]]}: {mean_abs[idx[i]]:.4f}")
 
-        # Plot importance
+        # Plot global importance
         plt.figure(figsize=(8, 4))
         plt.barh(feature_names[::-1], mean_abs[::-1])
         plt.title(f"SHAP Global Importance — {name}")
@@ -180,7 +191,6 @@ def run_shap(models, splits):
         plt.show()
 
     return shap_results
-
 
 # ---------------------------------------------------------
 # 5. PCA visualization across datasets
@@ -238,6 +248,56 @@ def run_pca(datasets):
 
 
 # ---------------------------------------------------------
+# 4B. Deep SHAP for Hybrid QNN (PyTorch model)
+# ---------------------------------------------------------
+def run_deep_shap_hqnn(hqnn_model, X_train_t, X_test_t, feature_names):
+    """
+    Applies SHAP DeepExplainer to your Hybrid QNN model.
+    Works with PyTorch models and captures classical + quantum components.
+    """
+
+    print("\nWEEK 5 — DEEP SHAP FOR HYBRID QNN")
+    print("=" * 60)
+
+    # Convert to small background sample
+    background = X_train_t[:50]       # SHAP recommendation
+    test_samples = X_test_t[:100]     # Limit to reasonable size for speed
+
+    # Ensure model eval mode
+    hqnn_model.eval()
+
+    # DeepExplainer
+    explainer = shap.DeepExplainer(hqnn_model, background)
+
+    # SHAP values → list of tensors, one per output
+    shap_values = explainer.shap_values(test_samples)[0]
+
+    # Convert to numpy
+    shap_values = shap_values.detach().cpu().numpy()
+
+    # Compute global importance
+    mean_abs = np.abs(shap_values).mean(axis=0)
+
+    # Print top 10
+    idx = np.argsort(-mean_abs)
+    print("\nTOP FEATURES (HYBRID QNN):")
+    for i in range(min(10, len(feature_names))):
+        print(f"  {i+1}. {feature_names[idx[i]]}: {mean_abs[idx[i]]:.4f}")
+
+    # Plot
+    plt.figure(figsize=(8, 4))
+    plt.barh(feature_names[::-1], mean_abs[::-1])
+    plt.title("Hybrid QNN — SHAP Global Feature Importance")
+    plt.tight_layout()
+    plt.show()
+
+    return {
+        "shap_values": shap_values,
+        "mean_abs": mean_abs,
+        "features": feature_names,
+    }
+
+# ---------------------------------------------------------
 # 6. Week 5 wrapper
 # ---------------------------------------------------------
 def run_week5_explainability():
@@ -245,17 +305,44 @@ def run_week5_explainability():
     print("       WEEK 5 — SHAP & PCA Explainability")
     print("=" * 60)
 
+    # ---------------------------------------------------------
+    # Load datasets
+    # ---------------------------------------------------------
     datasets = load_drm_datasets()
+
+    # ---------------------------------------------------------
+    # XGBoost baselines + SHAP + PCA
+    # ---------------------------------------------------------
     baseline, models, splits = train_xgboost(datasets)
     shap_results = run_shap(models, splits)
     pca_results = run_pca(datasets)
 
-    print("\nWEEK 5 COMPLETE ✓")
-    print("• XGBoost baselines trained")
-    print("• SHAP global importance computed")
-    print("• PCA drift visualized\n")
+    # ---------------------------------------------------------
+    # Deep SHAP for HYBRID QNN (Week 4)
+    # ---------------------------------------------------------
+    print("\nLOADING HYBRID QNN FROM WEEK 4 FOR DEEP SHAP...")
 
-    return baseline, shap_results, pca_results
+    from week4_hqnn import HybridQuantumModel
+    clean_df = datasets["Clean Data"]
+
+    hmodel = HybridQuantumModel(n_qubits=4, n_layers=2)
+
+    X_train_t, X_test_t, y_train_t, y_test_t, feature_cols = \
+        hmodel.prepare_data(clean_df)
+
+    deep_shap_results = run_deep_shap_hqnn(
+        hmodel,
+        X_train_t,
+        X_test_t,
+        feature_cols
+    )
+
+    print("\nHYBRID QNN DeepSHAP completed ✓")
+
+    # ---------------------------------------------------------
+    # Return all Week 5 outputs
+    # ---------------------------------------------------------
+    return baseline, shap_results, pca_results, deep_shap_results
 
 
 if __name__ == "__main__":
