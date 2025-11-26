@@ -393,7 +393,7 @@ def run_week5_explainability():
     # -----------------------------------------
     print("\nLOADING HYBRID QNN FROM WEEK 4 FOR KERNEL SHAP...")
 
-    from week4_hqnn import HybridQuantumModel
+    from src.week4_hqnn import HybridQuantumModel
     clean_df = datasets["Clean Data"]
 
     hmodel = HybridQuantumModel(n_qubits=4, n_layers=2)
