@@ -197,7 +197,6 @@ class HybridQuantumModel(nn.Module):
         )
 
     def forward(self, x):
-        """Hybrid forward pass: quantum + classical."""
         # Use first n_qubits features for quantum processing
         x_quantum = x[:, : self.n_qubits]
 
@@ -205,18 +204,17 @@ class HybridQuantumModel(nn.Module):
         quantum_outputs = []
         for i in range(x.shape[0]):
             q_out = self.quantum_circuit(x_quantum[i], self.weights)
-            
-            # Convert qnoce output (list or numpy array) into tensor
             q_out = torch.tensor(q_out, dtype=torch.float32)
-            
             quantum_outputs.append(q_out)
 
         quantum_tensor = torch.stack(quantum_outputs)
 
-        # Classical processing
+        # Classical neural network
         output = self.classical_nn(quantum_tensor)
 
-        return output.squeeze()
+        # Return shape (batch, 1) for SHAP compatibility
+        return output  # DO NOT squeeze
+
 
     def train_model(self, X_train, y_train, epochs=200, lr=0.01):
         """Train the hybrid model (matches Colab)."""
