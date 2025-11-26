@@ -1,3 +1,6 @@
+import sys, os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from src.week1_exploration import run_week1_exploration
 from src.week2_preprocessing import run_week2_preprocessing
 from src.week2b_consistency import run_week2b_consistency
