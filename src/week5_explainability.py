@@ -9,10 +9,9 @@ Run alone:
 Run in full pipeline:
     python main.py
 """
-import sys, os
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if PROJECT_ROOT not in sys.path:
-    sys.path.append(PROJECT_ROOT)
+import os
+os.makedirs("outputs", exist_ok=True)
+
 
 import os
 import numpy as np
@@ -420,7 +419,7 @@ def run_week5_explainability():
     # -----------------------------------------
     return baseline, shap_results, pca_results, kernel_shap_results
 
-
+    
 # Entry point
 if __name__ == "__main__":
     run_week5_explainability()
