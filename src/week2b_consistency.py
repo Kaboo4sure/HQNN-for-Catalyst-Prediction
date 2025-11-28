@@ -17,8 +17,13 @@ def run_week2b_consistency():
         "drm_corrupted_inconsistent.csv",
     ]
 
-    for f in files:
-        shutil.copy(DRM_DIR + "\\" + f, PROCESSED_DIR + "\\" + f)
+    for f in os.listdir(DRM_DIR):
+        if f.endswith(".csv"):
+            src = os.path.join(DRM_DIR, f)
+            dst = os.path.join(PROCESSED_DIR, f)
+            print("Copying:", src, "→", dst)
+            shutil.copy(src, dst)
+
 
     print("Week 2B → All corrupted datasets copied to processed folder.")
 
