@@ -79,7 +79,7 @@ def run_week3_models():
     results = {}
 
     for name, file in datasets.items():
-        df = pd.read_csv(PROCESSED_DIR + "\\" + file)
+        df = pd.read_csv(os.path.join(PROCESSED_DIR, file))
         results[name] = evaluate(df)
 
     print("\n=== Week 3 Results ===")

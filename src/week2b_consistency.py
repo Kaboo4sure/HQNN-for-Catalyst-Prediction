@@ -22,7 +22,10 @@ def run_week2b_consistency():
             src = os.path.join(DRM_DIR, f)
             dst = os.path.join(PROCESSED_DIR, f)
             print("Copying:", src, "→", dst)
-            shutil.copy(src, dst)
+            shutil.copy(
+                os.path.join(DRM_DIR, f),
+                os.path.join(PROCESSED_DIR, f)
+            )
 
 
     print("Week 2B → All corrupted datasets copied to processed folder.")
