@@ -1,17 +1,14 @@
 import os
 
-# Path to src/ folder
-CONFIG_DIR = os.path.dirname(os.path.abspath(__file__))
+# Absolute path to the repository root (two levels above src/)
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Go two levels up: src → project → repo root
-ROOT_DIR = os.path.abspath(os.path.join(CONFIG_DIR, "..", ".."))
-
-# Data directories
+# Paths to data folders (relative to repo root)
 DATA_DIR = os.path.join(ROOT_DIR, "notebooks", "data")
 DRM_DIR = os.path.join(DATA_DIR, "drm")
 PROCESSED_DIR = os.path.join(DATA_DIR, "processed")
 
-# Ensure processed dir exists
+# Ensure processed folder exists
 os.makedirs(PROCESSED_DIR, exist_ok=True)
 
 TARGET = "ch4_conversion"

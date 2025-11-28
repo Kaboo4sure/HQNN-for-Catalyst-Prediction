@@ -46,3 +46,17 @@ jobs:
         grep DRM_DIR -n config.py || echo "Not found"
         echo "--- Contents of notebooks/data ---"
         ls -R notebooks/data
+
+  
+    - name: Debug paths
+      run: |
+        python - << 'EOF'
+        from src.config import ROOT_DIR, DRM_DIR
+        import os
+        print("ROOT_DIR =", ROOT_DIR)
+        print("DRM_DIR =", DRM_DIR)
+        print("DRM Exists? ", os.path.exists(DRM_DIR))
+        print("Contents:", os.listdir(DRM_DIR) if os.path.exists(DRM_DIR) else "Missing")
+        EOF notebooks/data
+        
+
