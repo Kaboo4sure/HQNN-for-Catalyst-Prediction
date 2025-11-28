@@ -1,0 +1,45 @@
+name: HQNN Catalyst Pipeline
+
+on: 
+  push:
+    branches: [ main ]
+  workflow_dispatch:   # allow manual run
+
+jobs:
+  run-hqnn:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+        # Force NumPy 1.26 to avoid SHAP/PennyLane issues
+        pip install "numpy<2"
+
+        # Reinstall SHAP after numpy pin
+        pip install shap==0.42.1
+
+    - name: Run HQNN full pipeline
+      run: |
+        python main.py
+
+    - name: Upload Artifacts (Plots + Logs + Results)
+      uses: actions/upload-artifact@v3
+      with:
+        name: hqnn-results
+        path: |
+          outputs/
+          **/*.png
+          **/*.csv
+          **/*.txt
+          **/*.json
