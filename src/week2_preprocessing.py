@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from config import DRM_DIR, PROCESSED_DIR
 
 def run_week2_preprocessing():
-    df = pd.read_csv(DRM_DIR + r"\drm_catalyst_performance.csv")
+    df = pd.read_csv(os.path.join(DRM_DIR, "drm_catalyst_performance.csv"))
 
     os.makedirs(PROCESSED_DIR, exist_ok=True)
     df.to_csv(PROCESSED_DIR + r"\drm_clean_processed.csv", index=False)

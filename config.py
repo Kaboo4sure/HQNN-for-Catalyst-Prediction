@@ -1,6 +1,13 @@
-DATA_DIR = r"C:\MachineLearning\HQNN\HQNN-for-Catalyst-Prediction\notebooks\data"
-DRM_DIR = DATA_DIR + r"\drm"
-PROCESSED_DIR = DATA_DIR + r"\processed"
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+DATA_DIR = os.path.join(BASE_DIR, "notebooks", "data")
+DRM_DIR = os.path.join(DATA_DIR, "drm")
+PROCESSED_DIR = os.path.join(DATA_DIR, "processed")
+
+os.makedirs(PROCESSED_DIR, exist_ok=True)
+
 
 TARGET = "ch4_conversion"
 

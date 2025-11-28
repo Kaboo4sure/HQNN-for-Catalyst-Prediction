@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from config import DRM_DIR
 
 def run_week1_exploration():
-    df = pd.read_csv(DRM_DIR + r"\drm_catalyst_performance.csv")
+    df = pd.read_csv(os.path.join(DRM_DIR, "drm_catalyst_performance.csv"))
 
     print(df.head())
     print(df.describe())
