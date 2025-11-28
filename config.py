@@ -1,7 +1,7 @@
 import os
 
-# Go 3 levels up from src/config.py
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Absolute path to repository root no matter where code is executed
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 DATA_DIR = os.path.join(ROOT_DIR, "notebooks", "data")
 DRM_DIR = os.path.join(DATA_DIR, "drm")
