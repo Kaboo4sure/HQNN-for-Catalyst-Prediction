@@ -58,5 +58,7 @@ jobs:
         print("DRM Exists? ", os.path.exists(DRM_DIR))
         print("Contents:", os.listdir(DRM_DIR) if os.path.exists(DRM_DIR) else "Missing")
         EOF notebooks/data
+
+        
         
 
