@@ -59,6 +59,9 @@ jobs:
         print("Contents:", os.listdir(DRM_DIR) if os.path.exists(DRM_DIR) else "Missing")
         EOF notebooks/data
 
-        
+
+    - name: Set workspace variable
+      run: echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+           
         
 
