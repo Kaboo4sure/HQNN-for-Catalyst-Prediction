@@ -413,6 +413,9 @@ def run_week5_explainability():
     )
 
     print("\nHYBRID QNN Kernel SHAP completed ✓")
+    plt.savefig("outputs/week5_shap_summary.png", dpi=300, bbox_inches="tight")
+
+    
 
     # -----------------------------------------
     # Final return of Week 5 results

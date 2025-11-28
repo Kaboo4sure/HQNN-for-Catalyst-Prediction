@@ -17,7 +17,8 @@ def run_week1_exploration():
     sns.histplot(df["ch4_conversion"], kde=True)
     plt.title("CH₄ Conversion Distribution")
     plt.show()
-    
+    plt.savefig("outputs/week1_corr_heatmap.png", dpi=300)
+
 
 if __name__ == "__main__":
     run_week1_exploration()

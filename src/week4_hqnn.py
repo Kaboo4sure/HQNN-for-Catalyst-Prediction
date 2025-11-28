@@ -343,6 +343,9 @@ def run_hybrid_qnn_experiments(datasets):
 
     plt.tight_layout()
     plt.show()
+    plt.savefig("outputs/week4_hqnn_loss.png", dpi=300)
+
+    
 
     # Performance degradation analysis
     print("\nPERFORMANCE DEGRADATION (vs Clean Data, MAE-based)")
