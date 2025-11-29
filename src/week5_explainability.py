@@ -163,27 +163,50 @@ def run_shap(models, splits):
         X_test = splits[name]["X_test"]
         feature_names = splits[name]["feature_names"]
 
-        explainer = shap.Explainer(model)
-        shap_values = explainer(X_test[:50])
+        # Background requirement for KernelExplainer
+        background = X_train[:20]
 
-        values = shap_values.values
+        # ---- FIXED (SHAP v0.42.1 compatible) ----
+        # Use model.predict as the callable
+        explainer = shap.Explainer(
+            model.predict,
+            background,
+            algorithm="kernel"          # forces Kernel SHAP
+        )
+
+        # Compute SHAP values
+        shap_values = explainer(X_test[:30])     # SHAP Explanation object
+        values = shap_values.values              # numpy array
+
+        # Global importance
         mean_abs = np.abs(values).mean(axis=0)
 
+        # Store results
         shap_results[name] = {
             "shap_values": values,
             "mean_abs": mean_abs,
             "features": feature_names,
         }
 
+        # Top 5 features log
+        idx = np.argsort(-mean_abs)
+        print("   Top 5 Features:")
+        for i in range(5):
+            print(f"     {i+1}. {feature_names[idx[i]]}: {mean_abs[idx[i]]:.4f}")
+
         # Save plot
         plt.figure(figsize=(8, 4))
         plt.barh(feature_names[::-1], mean_abs[::-1])
-        plt.title(f"SHAP Feature Importance — {name}")
+        plt.title(f"SHAP Global Importance — {name}")
         plt.tight_layout()
-        plt.savefig(f"outputs/week5_shap_{name.replace(' ','_')}.png", dpi=300)
+
+        os.makedirs("outputs", exist_ok=True)
+        plt.savefig(f"outputs/week5_shap_{name.replace(' ', '_')}.png", dpi=300)
+
         plt.close()
 
     return shap_results
+
 
 
 # =========================================================
