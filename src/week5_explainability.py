@@ -163,32 +163,33 @@ def run_shap(models, splits):
         X_test = splits[name]["X_test"]
         feature_names = splits[name]["feature_names"]
 
-        # Background requirement for KernelExplainer
+        # Background sample (small for speed)
         background = X_train[:20]
 
-        # ---- FIXED (SHAP v0.42.1 compatible) ----
-        # Use model.predict as the callable
-        explainer = shap.Explainer(
+        # -----------------------------------------------
+        # FINAL FIX: Use KernelExplainer directly (SHAP v0.42+)
+        # -----------------------------------------------
+        explainer = shap.KernelExplainer(
             model.predict,
-            background,
-            algorithm="kernel"          # forces Kernel SHAP
+            background
         )
 
-        # Compute SHAP values
-        shap_values = explainer(X_test[:30])     # SHAP Explanation object
-        values = shap_values.values              # numpy array
+        # Compute SHAP values for 30 samples
+        shap_values = explainer.shap_values(X_test[:30])
 
-        # Global importance
-        mean_abs = np.abs(values).mean(axis=0)
+        # Convert to numpy
+        shap_values = np.array(shap_values)
 
-        # Store results
+        # Global mean absolute importance
+        mean_abs = np.abs(shap_values).mean(axis=0)
+
         shap_results[name] = {
-            "shap_values": values,
+            "shap_values": shap_values,
             "mean_abs": mean_abs,
             "features": feature_names,
         }
 
-        # Top 5 features log
+        # Log top features
         idx = np.argsort(-mean_abs)
         print("   Top 5 Features:")
         for i in range(5):
@@ -206,6 +207,7 @@ def run_shap(models, splits):
         plt.close()
 
     return shap_results
+
 
 
 
