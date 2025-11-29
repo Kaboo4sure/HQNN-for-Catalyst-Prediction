@@ -258,47 +258,41 @@ def run_pca(datasets):
 # =========================================================
 # 6. FAST EXPLAINABILITY FOR HYBRID QNN
 # =========================================================
-def run_hqnn_explainability(hmodel, X_train_t, X_test_t, feature_names):
+def run_hqnn_explainability(hqnn_model, X_train_t, X_test_t, feature_names):
     print("\nWEEK 5 — HQNN EXPLAINABILITY (FAST)")
     print("=" * 60)
 
-    hmodel.eval()
+    # Convert tensors → numpy
+    X_train_np = X_train_t.detach().cpu().numpy()
+    X_test_np = X_test_t.detach().cpu().numpy()
 
-    baseline = X_train_t.mean(dim=0).unsqueeze(0)
-    test_samples = X_test_t[:50]
+    background = X_train_np[:40]
+    test_samples = X_test_np[:60]
 
-    # Integrated Gradients
-    ig = IntegratedGradients(hmodel)
-    ig_attr = ig.attribute(test_samples, baselines=baseline)
-    ig_attr = ig_attr.detach().cpu().numpy()
+    # Prediction wrapper
+    def predict_fn(x):
+        x_t = torch.tensor(x, dtype=torch.float32)
+        with torch.no_grad():
+            return hqnn_model(x_t).cpu().numpy()
 
-    # Gradient SHAP
-    gs = GradientShap(hmodel)
-    gs_attr = gs.attribute(
-        test_samples,
-        baselines=baseline,
-        n_samples=20,
-        stdevs=0.0001
-    )
-    gs_attr = gs_attr.detach().cpu().numpy()
+    # Kernel SHAP
+    explainer = shap.KernelExplainer(predict_fn, background)
+    shap_values = explainer.shap_values(test_samples)
+    shap_values = np.array(shap_values)
 
-    # Combine = more stable
-    mean_attr = (np.abs(ig_attr).mean(axis=0) + np.abs(gs_attr).mean(axis=0)) / 2
+    mean_abs = np.abs(shap_values).mean(axis=0)
 
     # Plot
-    plt.figure(figsize=(8, 4))
-    plt.barh(feature_names[::-1], mean_attr[::-1])
-    plt.title("Hybrid QNN — Integrated Gradients + GradientSHAP")
+    plt.figure(figsize=(8,4))
+    plt.barh(feature_names[::-1], mean_abs[::-1])
+    plt.title("Hybrid QNN — SHAP Feature Importance")
     plt.tight_layout()
-    plt.savefig("outputs/week5_hqnn_integrated_gradients.png", dpi=300)
+    plt.savefig("outputs/week5_hqnn_shap.png", dpi=300)
     plt.close()
 
-    print("HQNN explainability complete ✓")
-
     return {
-        "ig": ig_attr,
-        "gs": gs_attr,
-        "mean_abs": mean_attr,
+        "shap_values": shap_values,
+        "mean_abs": mean_abs,
         "features": feature_names,
     }
 
